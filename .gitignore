@@ -1,0 +1,12 @@
+
+NFTs/NielsNFT/node_modules
+*.env
+NFTs/NielsNFT/coverage
+NFTs/NielsNFT/coverage.json
+NFTs/NielsNFT/typechain
+
+*.DS_Store
+
+#Hardhat files
+NFTs/NielsNFT/cache
+NFTs/NielsNFT/artifacts

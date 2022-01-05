@@ -3,6 +3,10 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { BigNumber } from "ethers"
 import "@nomiclabs/hardhat-waffle"
 
+require('dotenv').config();
+
+const { API_URL, PRIVATE_KEY } = process.env;
+
 // When using the hardhat network, you may choose to fork Fuji or Avalanche Mainnet
 // This will allow you to debug contracts using the hardhat network while keeping the current network state
 // To enable forking, turn one of these booleans on, and then run your tasks/scripts using ``--network hardhat``
@@ -61,10 +65,10 @@ export default {
       forking: forkingData
     },
     fuji: {
-      url: 'https://api.avax-test.network/ext/bc/C/rpc',
+      url: API_URL,
       gasPrice: 225000000000,
       chainId: 43113,
-      accounts: ['8727f40a8b496a3238ad9719a791b8be0fccca38e48b311bffbc24d362c76ace']
+      accounts: [PRIVATE_KEY]
     },
     mainnet: {
       url: 'https://api.avax.network/ext/bc/C/rpc',
