@@ -58,6 +58,7 @@ export default {
       }
     ]
   },
+  defaultNetwork: "fuji",
   networks: {
     hardhat: {
       gasPrice: 225000000000,
