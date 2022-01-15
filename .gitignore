@@ -9,3 +9,11 @@ NFTs/NielsNFT/typechain
 #Hardhat files
 NFTs/NielsNFT/cache
 NFTs/NielsNFT/artifacts
+
+# Coin
+Coins/NielsCoin/node_modules
+Coins/NielsCoin/coverage
+Coins/NielsCoin/coverage.json
+Coins/NielsCoin/typechain
+Coins/NielsCoin/cache
+Coins/NielsCoin/artifacts

@@ -14,6 +14,8 @@ Some sample NFTs created by me.
 ### NielsNFT
 ERC721Enumerable implementation called NielsNFT deployed on Avalanche C-Chain Testnet (FUJI).
 
-
+## Coins
+Some sample coins.
 
 ### NielsCoin
+ERC20 implementation called NielsCoin deployed on Avalanche C-Chain Testnet (FUJI).
