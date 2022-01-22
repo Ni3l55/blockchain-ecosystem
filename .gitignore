@@ -17,3 +17,8 @@ Coins/NielsCoin/coverage.json
 Coins/NielsCoin/typechain
 Coins/NielsCoin/cache
 Coins/NielsCoin/artifacts
+
+# DApps
+**/node_modules
+**/cache
+**/artifacts
