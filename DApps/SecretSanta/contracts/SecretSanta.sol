@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract SecretSanta is Ownable {
   using SafeMath for uint256;
@@ -29,7 +30,7 @@ contract SecretSanta is Ownable {
     // Check if its an ERC721 contract
     ERC721 depositNFT = ERC721(_nftAddr);
 
-    _nftAddr.delegatecall(abi.encodeWithSignature("transfer(address, uint256)", address(this), _nftId));
+    _nftAddr.delegatecall(abi.encodeWithSignature("approve(address, uint256)", address(this), _nftId));
   }
 
   // Deposit one of your NFTs, which has to be ERC721 format
@@ -38,7 +39,9 @@ contract SecretSanta is Ownable {
     // Convert to ERC721 contract to interact with it
     ERC721 depositNFT = ERC721(_nftAddr);   // TODO check safety of this method
 
-    depositNFT.transfer(address(this), _nftId);
+    // Transfer NFT from sender to this contract
+    // This contract should be approved by sender, otherwise will fail
+    depositNFT.safeTransferFrom(msg.sender, address(this), _nftId);
   }
 
 }

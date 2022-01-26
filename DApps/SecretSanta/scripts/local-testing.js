@@ -8,6 +8,7 @@ const { utils } = require("ethers");
 
 var NielsNFTContract;
 var SecretSantaContract;
+
 const [contractOwner, user1, user2, user3] = await hre.ethers.getSigners();
 
 async function deployNielsNFT() {
@@ -56,6 +57,9 @@ async function sendNFTsToSanta(user) {
 }
 
 async function main() {
+  let NielsNFTContract;
+  let SecretSantaContract;
+
   deployNielsNFT();
 
   deploySecretSanta();
