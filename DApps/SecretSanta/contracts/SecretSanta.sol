@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract SecretSanta is Ownable {
   using SafeMath for uint256;
@@ -23,7 +23,7 @@ contract SecretSanta is Ownable {
   mapping(address => mapping(address => uint256)) private _deposits;
 
   // Approve a transfer of one of your NFTs to this contract // TODO potentially use operator instead of single NFT approval
-  function approveTransfers(address _nftAddr, uint256 _nftId) public payable {
+  function approveTransfer(address _nftAddr, uint256 _nftId) public payable {
     // Create a delegatecall to contract for approval
 
     // Check if its an ERC721 contract

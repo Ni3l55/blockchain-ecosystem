@@ -1,68 +1,68 @@
+import {
+  Contract,
+  ContractFactory
+} from "ethers"
+import { ethers } from "hardhat"
+
 const { utils } = require("ethers");
 
 var NielsNFTContract;
+var SecretSantaContract;
+const [contractOwner, user1, user2, user3] = await hre.ethers.getSigners();
 
-async function deployNFT() {
+async function deployNielsNFT() {
   const baseTokenURI = "ipfs://QmZbWNKJPAjxXuNFSEaksCJVd1M6DaKQViJBYPK2BdpDEP/";
-
-  // Get owner/deployer's wallet address
-  const [owner] = await hre.ethers.getSigners();
 
   // Get contract template that we want to deploy
   const contractFactory = await hre.ethers.getContractFactory("NielsNFT");
 
   // Instantiate contract with the correct constructor arguments and deploy to chain
-  const NielsNFTContract = await contractFactory.deploy(baseTokenURI);
+  NielsNFTContract = await contractFactory.deploy(baseTokenURI);
 
   // Wait for this transaction to be mined
   await NielsNFTContract.deployed();
 
   // Get contract address
-  console.log("NielsNFT Contract deployed to:", NielsNFTContract.address);
+  console.log("NielsNFT Contract deployed to: ", NielsNFTContract.address);
+}
 
+async function mintNielsNFTs(user) {
   // Mint some NFTs for myself (deployer of contract)
-  let txn = await NielsNFTContract.mintNFTs(5, { value: utils.parseEther('0.5')});
+  let txn = await NielsNFTContract.connect(user).mintNFTs(5, { value: utils.parseEther('0.5')});
   await txn.wait();
-  console.log("5 NielsNFT instances minted to:", owner.address);
+  console.log("5 NielsNFT instances minted to:", user.address);
  
   // Confirm
-  let tokenAmt = await NielsNFTContract.balanceOf(owner.address);
+  let tokenAmt = await NielsNFTContract.balanceOf(user.address);
   console.log("Number of tokens confirmation: ", tokenAmt);
 }
 
-async function functionName() {
+async function deploySecretSanta() {
+  // Get secret santa contract template
+  const contractFactory = await hre.ethers.getContractFactory("SecretSanta");
 
+  // Instantiate contract by deploying to chain
+  SecretSantaContract = await contractFactory.deploy();
+
+  // Wait for transaction to be mined / validated
+  await SecretSantaContract.deployed();
+
+  // Show address
+  console.log("SecretSanta contract deployed to: ", SecretSantaContract.address);
+}
+
+async function sendNFTsToSanta(user) {
+  // Send
 }
 
 async function main() {
-    deployNFT();
+  deployNielsNFT();
 
-    // Reserve 6 NFTs
-    let txn = await contract.reserveNFTs(6);
-    await txn.wait();         // Wait for transaction to complete. Has to be mined
-    console.log("6 reserved NFTs have been minted");
+  deploySecretSanta();
 
-    // Check if 4 reserved left
-    let left = await contract.reservedLeft();
-    console.log("Reserved left:", left);
+  mintNielsNFTsToUser(user1);
 
-    // Mint 90 NFTs by sending 0.9 ether
-    txn = await contract.mintNFTs(90, { value: utils.parseEther('0.9') });
-    await txn.wait()        // Wait for transaction to complete. Has to be mined
-    console.log("Minting 90 NFTs");
-
-    // Get amount of tokens
-    let tokens = await contract.balanceOf(owner.address);
-    console.log("Owner has # tokens: ", tokens);
-
-    // Mint reserved NFTs while normals can't mint
-    txn = await contract.reserveNFTs(2);
-    await txn.wait();
-    console.log("Claiming 2 reserved NFTs");
-
-    // Get amount of tokens
-    tokens = await contract.balanceOf(owner.address);
-    console.log("Owner has # tokens: ", tokens);
+  sendNFTsToSanta(user1);
 }
 
 main()
