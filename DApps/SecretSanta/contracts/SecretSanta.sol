@@ -3,10 +3,13 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-contract SecretSanta is Ownable {
+contract SecretSanta is Ownable, ERC721Holder {
   using SafeMath for uint256;
+
+  event SantaApproves(address user, address nftAddress, uint nftId);
 
   // Users have NFTs, which is a certain address containing an ERC721 contract, with entry of that user
   // NFT ownership be transferred to this contract address
@@ -23,17 +26,26 @@ contract SecretSanta is Ownable {
   // Deposits by people: User --> ERC721 Contract --> tokenID
   mapping(address => mapping(address => uint256)) private _deposits;
 
+  // DEPRECATED: LET EOA DO APPROVAL ON HIS NFT HIMSELF (use JS)
   // Approve a transfer of one of your NFTs to this contract // TODO potentially use operator instead of single NFT approval
   function approveTransfer(address _nftAddr, uint256 _nftId) public payable {
     // Create a delegatecall to contract for approval
+    // Could check if user owns that nft here already instead of making wrong call + revert
 
     // Check if its an ERC721 contract
     ERC721 depositNFT = ERC721(_nftAddr);
 
+    emit SantaApproves(msg.sender, _nftAddr, _nftId);
+
+    // Register the approval already
+    _approvals[msg.sender][_nftAddr] = _nftId;
+
+    // Transact approval on NFT contract
     _nftAddr.delegatecall(abi.encodeWithSignature("approve(address, uint256)", address(this), _nftId));
   }
 
   // Deposit one of your NFTs, which has to be ERC721 format
+  // Requires an approval to be done on the _nftAddr already
   function deposit(address _nftAddr, uint256 _nftId) public payable {
 
     // Convert to ERC721 contract to interact with it

@@ -1,15 +1,14 @@
-import {
-  Contract,
-  ContractFactory
-} from "ethers"
-import { ethers } from "hardhat"
-
 const { utils } = require("ethers");
 
 var NielsNFTContract;
 var SecretSantaContract;
+var contractOwner, user1, user2, user3;
 
-const [contractOwner, user1, user2, user3] = await hre.ethers.getSigners();
+async function initUsers() {
+  [contractOwner, user1, user2, user3] = await hre.ethers.getSigners();
+
+  console.log("Users initialized");
+}
 
 async function deployNielsNFT() {
   const baseTokenURI = "ipfs://QmZbWNKJPAjxXuNFSEaksCJVd1M6DaKQViJBYPK2BdpDEP/";
@@ -28,14 +27,14 @@ async function deployNielsNFT() {
 }
 
 async function mintNielsNFTs(user) {
-  // Mint some NFTs for myself (deployer of contract)
+  // Mint some NFTs for given user
   let txn = await NielsNFTContract.connect(user).mintNFTs(5, { value: utils.parseEther('0.5')});
   await txn.wait();
   console.log("5 NielsNFT instances minted to:", user.address);
  
   // Confirm
   let tokenAmt = await NielsNFTContract.balanceOf(user.address);
-  console.log("Number of tokens confirmation: ", tokenAmt);
+  console.log("Number of tokens confirmation:", tokenAmt);
 }
 
 async function deploySecretSanta() {
@@ -49,24 +48,43 @@ async function deploySecretSanta() {
   await SecretSantaContract.deployed();
 
   // Show address
-  console.log("SecretSanta contract deployed to: ", SecretSantaContract.address);
+  console.log("SecretSanta contract deployed to:", SecretSantaContract.address);
 }
 
-async function sendNFTsToSanta(user) {
-  // Send
+async function approveNFTsendToSanta(user, nftContract, nftId) {
+  // User contacts his NFT contract with the SS-address and the id
+  let txn = await nftContract.connect(user).approve(SecretSantaContract.address, nftId);
+  await txn.wait();
+  console.log("NFT approval done by user:", user.address);
+
+  // Confirm
+  let approvedAccount = await nftContract.getApproved(nftId);
+  console.log("Approved NFT operator:", approvedAccount);
+}
+
+async function sendNFTtoSanta(user, nftContract, nftId) {
+  // Requires approval to be done first by user
+  let txn = await SecretSantaContract.connect(user).deposit(nftContract.address, nftId);
+  await txn.wait();
+  console.log("NFT sent to santa by user:", user.address);
+
+  // Confirm
+  let nftOwner = await nftContract.ownerOf(nftId);
+  console.log("Owner of NFT:", nftOwner)
 }
 
 async function main() {
-  let NielsNFTContract;
-  let SecretSantaContract;
+  await initUsers();
 
-  deployNielsNFT();
+  await deployNielsNFT();
 
-  deploySecretSanta();
+  await deploySecretSanta();
 
-  mintNielsNFTsToUser(user1);
+  await mintNielsNFTs(user1);
 
-  sendNFTsToSanta(user1);
+  await approveNFTsendToSanta(user1, NielsNFTContract, 1)
+
+  await sendNFTtoSanta(user1, NielsNFTContract, 1);
 }
 
 main()
