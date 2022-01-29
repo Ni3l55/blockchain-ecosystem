@@ -9,51 +9,103 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 contract SecretSanta is Ownable, ERC721Holder {
   using SafeMath for uint256;
 
-  event SantaApproves(address user, address nftAddress, uint nftId);
+  struct NFTInstance {
+    address nftAddress;
+    uint256 nftId;
+  }
 
   // Users have NFTs, which is a certain address containing an ERC721 contract, with entry of that user
-  // NFT ownership be transferred to this contract address
-  // SecretSanta tracks who gave which NFT
+  // NFT ownership can be transferred to this contract address
+  // PHASE DEPOSIT:
+  //    Users can deposit a single NFT by approving SecretSanta and calling deposit()
+  //    TODO: figure out howto: users can back out and reclaim their NFT Instance
+  // PHASE GIFT:
+  //    NFTs are put into a pool, and depositors can claim a new NFT
+  //    If users forget to claim an NFT, they can claim another one next cycle
+  // PHASE COOLDOWN:
+  //    Nothing happens
 
-  // Assemble period - everyone can send in NFTs until date X
-  // Calc period - Secret Santa matches NFTs of roughly same value
-  // Gift period - Secret Santa gifts NFTs to depositors
+  // Deposits by people: User --> NFT
+  mapping(address => NFTInstance) private _deposits;
 
-  // Sending an ERC721 NFT: approval of transfer of NFT --> transfer --> add to deposits
-  // Approvals by people: User --> ERC721 --> tokenID
-  mapping(address => mapping(address => uint256)) private _approvals;
+  // Pool of NFTs to be gifted during this cycle
+  NFTInstance[] private _nftPool;
 
-  // Deposits by people: User --> ERC721 Contract --> tokenID
-  mapping(address => mapping(address => uint256)) private _deposits;
+  // Index for gifting from pool
+  uint256 private _poolIndex = 0;
 
-  // DEPRECATED: LET EOA DO APPROVAL ON HIS NFT HIMSELF (use JS)
-  // Approve a transfer of one of your NFTs to this contract // TODO potentially use operator instead of single NFT approval
-  function approveTransfer(address _nftAddr, uint256 _nftId) public payable {
-    // Create a delegatecall to contract for approval
-    // Could check if user owns that nft here already instead of making wrong call + revert
+  // Gifts to users: User --> NFT
+  mapping(address => NFTInstance) private _gifts;
 
-    // Check if its an ERC721 contract
-    ERC721 depositNFT = ERC721(_nftAddr);
-
-    emit SantaApproves(msg.sender, _nftAddr, _nftId);
-
-    // Register the approval already
-    _approvals[msg.sender][_nftAddr] = _nftId;
-
-    // Transact approval on NFT contract
-    _nftAddr.delegatecall(abi.encodeWithSignature("approve(address, uint256)", address(this), _nftId));
-  }
+  // Predefined phases to control flow: deposits, gifting and cooldown
+  enum PHASE { DEPOSIT, GIFT, COOLDOWN }
+  PHASE private _currentPhase = PHASE.COOLDOWN;
 
   // Deposit one of your NFTs, which has to be ERC721 format
   // Requires an approval to be done on the _nftAddr already
-  function deposit(address _nftAddr, uint256 _nftId) public payable {
+  // Users can only deposit 1 NFT (currently)
+  function deposit(address _nftAddr, uint256 _nftId) public {
+    require(_currentPhase == PHASE.GIFT);
+    require(_deposits[msg.sender] == 0);  // User did not deposit yet
 
     // Convert to ERC721 contract to interact with it
     ERC721 depositNFT = ERC721(_nftAddr);   // TODO check safety of this method
 
+    nftInstance = NFTInstance(_nftAddr, _nftId);
+
+    // Register the deposit of an NFT
+    _deposits[msg.sender] = nftInstance;
+
+    // Add NFT to pool already. Do it here so user pays gas fees. ALTERNATIVE:
+    // Do it on goNextPhase(). Users will be able to revoke deposit as well
+    _nftPool.push(nftInstance);
+
     // Transfer NFT from sender to this contract
     // This contract should be approved by sender, otherwise will fail
     depositNFT.safeTransferFrom(msg.sender, address(this), _nftId);
+  }
+
+  // User picks a random gift from the deposits
+  // Gifts are matched here so user pays gas fees instead of owner
+  // TODO: use true random off-chain source
+  function claimGift() public {
+    require(_currentPhase == PHASE.GIFT);
+    require(_gifts[msg.sender] == 0);   // User did not take gift yet
+    require(_deposits[msg.sender] > 0)  // User is a depositor
+
+    // Pick a gift from the pool
+    nftInstance = _nftPool[_poolIndex];
+
+    ERC721 giftedNFT = ERC721(nftInstance.nftAddress);
+
+    // Remove from pool TODO, add to gifted
+    _gifts[msg.sender] = nftInstance;
+
+    // Actual transfer
+    giftedNFT.safeTransferFrom(address(this), msg.sender, nftInstance.nftId);
+  }
+
+  // Transfer to the next phase off {DEPOSIT, GIFT, COOLDOWN}
+  // Transferring
+  function goNextPhase(bool _allow) public onlyOwner {
+    // Shift to the next phase TODO reinitialize stuff probably
+    if (_currentPhase == PHASE.DEPOSIT) {
+      _currentPhase = PHASE.GIFT;
+    } else if (_currentPhase == PHASE.GIFT) {
+      _currentPhase = PHASE.COOLDOWN;
+    } else if (_currentPhase == PHASE.COOLDOWN) {
+      _currentPhase = PHASE.DEPOSIT;
+    }
+  }
+
+  // Check if deposits are allowed
+  function depositsAllowed() public {
+    return _currentPhase == PHASE.DEPOSIT;
+  }
+
+  // Check if gifting is allowed
+  function giftingAllowed() public {
+    return _currentPhase == PHASE.GIFT;
   }
 
 }

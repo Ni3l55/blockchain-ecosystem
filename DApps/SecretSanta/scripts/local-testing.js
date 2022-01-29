@@ -73,6 +73,16 @@ async function sendNFTtoSanta(user, nftContract, nftId) {
   console.log("Owner of NFT:", nftOwner)
 }
 
+// Let santa scramble the NFTs he received
+async function santaScramble() {
+
+}
+
+// Let santa send out NFTs to users
+async function santaSend() {
+
+}
+
 async function main() {
   await initUsers();
 
