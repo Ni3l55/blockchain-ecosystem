@@ -31,9 +31,6 @@ contract SecretSanta is Ownable, ERC721Holder {
   // Pool of NFTs to be gifted during this cycle
   NFTInstance[] private _nftPool;
 
-  // Index for gifting from pool
-  uint256 private _poolIndex = 0;
-
   // Gifts to users: User --> NFT
   mapping(address => NFTInstance) private _gifts;
 
@@ -73,16 +70,18 @@ contract SecretSanta is Ownable, ERC721Holder {
     require(_gifts[msg.sender].nftAddress == address(0x0));   // User did not take gift yet
     require(_deposits[msg.sender].nftAddress != address(0x0));  // User is a depositor
 
-    // Pick a gift from the pool
-    NFTInstance memory nftInstance = _nftPool[_poolIndex];
-    _poolIndex++;
+    // Pick a gift from the pool + delete from pool
+    NFTInstance memory nftInstance = _nftPool[_nftPool.length-1];
+    _nftPool.pop();
 
-    ERC721 giftedNFT = ERC721(nftInstance.nftAddress);
+    // Remove user from deposits; he has claimed
+    _deposits[msg.sender] = NFTInstance(address(0x0), 0);
 
-    // Remove from pool TODO, add to gifted
+    // Add gifted for housekeeping idk
     _gifts[msg.sender] = nftInstance;
 
     // Actual transfer
+    ERC721 giftedNFT = ERC721(nftInstance.nftAddress);
     giftedNFT.safeTransferFrom(address(this), msg.sender, nftInstance.nftId);
   }
 

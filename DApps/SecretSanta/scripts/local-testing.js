@@ -123,8 +123,8 @@ async function main() {
   await nextPhase();
 
   // Claim gifts
-  await claimGift(user3);
   await claimGift(user1);
+  await claimGift(user3);
   await claimGift(user2);
 }
 
