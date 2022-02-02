@@ -39,19 +39,19 @@ contract SecretSanta is Ownable, ERC721Holder {
 
   // Predefined phases to control flow: deposits, gifting and cooldown
   enum PHASE { DEPOSIT, GIFT, COOLDOWN }
-  PHASE private _currentPhase = PHASE.COOLDOWN;
+  PHASE private _currentPhase = PHASE.DEPOSIT;
 
   // Deposit one of your NFTs, which has to be ERC721 format
   // Requires an approval to be done on the _nftAddr already
   // Users can only deposit 1 NFT (currently)
   function deposit(address _nftAddr, uint256 _nftId) public {
-    require(_currentPhase == PHASE.GIFT);
-    require(_deposits[msg.sender] == 0);  // User did not deposit yet
+    require(_currentPhase == PHASE.DEPOSIT);
+    require(_deposits[msg.sender].nftAddress == address(0x0));  // User did not deposit yet
 
     // Convert to ERC721 contract to interact with it
     ERC721 depositNFT = ERC721(_nftAddr);   // TODO check safety of this method
 
-    nftInstance = NFTInstance(_nftAddr, _nftId);
+    NFTInstance memory nftInstance = NFTInstance(_nftAddr, _nftId);
 
     // Register the deposit of an NFT
     _deposits[msg.sender] = nftInstance;
@@ -67,14 +67,15 @@ contract SecretSanta is Ownable, ERC721Holder {
 
   // User picks a random gift from the deposits
   // Gifts are matched here so user pays gas fees instead of owner
-  // TODO: use true random off-chain source
+  // TODO: use true random off-chain source instead of index
   function claimGift() public {
     require(_currentPhase == PHASE.GIFT);
-    require(_gifts[msg.sender] == 0);   // User did not take gift yet
-    require(_deposits[msg.sender] > 0)  // User is a depositor
+    require(_gifts[msg.sender].nftAddress == address(0x0));   // User did not take gift yet
+    require(_deposits[msg.sender].nftAddress != address(0x0));  // User is a depositor
 
     // Pick a gift from the pool
-    nftInstance = _nftPool[_poolIndex];
+    NFTInstance memory nftInstance = _nftPool[_poolIndex];
+    _poolIndex++;
 
     ERC721 giftedNFT = ERC721(nftInstance.nftAddress);
 
@@ -85,26 +86,25 @@ contract SecretSanta is Ownable, ERC721Holder {
     giftedNFT.safeTransferFrom(address(this), msg.sender, nftInstance.nftId);
   }
 
-  // Transfer to the next phase off {DEPOSIT, GIFT, COOLDOWN}
-  // Transferring
-  function goNextPhase(bool _allow) public onlyOwner {
+  // Transfer to the next phase of {DEPOSIT, GIFT, COOLDOWN}
+  function goNextPhase() public onlyOwner {
     // Shift to the next phase TODO reinitialize stuff probably
     if (_currentPhase == PHASE.DEPOSIT) {
       _currentPhase = PHASE.GIFT;
     } else if (_currentPhase == PHASE.GIFT) {
-      _currentPhase = PHASE.COOLDOWN;
+      _currentPhase = PHASE.COOLDOWN;       // Wipe pool
     } else if (_currentPhase == PHASE.COOLDOWN) {
       _currentPhase = PHASE.DEPOSIT;
     }
   }
 
   // Check if deposits are allowed
-  function depositsAllowed() public {
+  function depositsAllowed() public returns (bool) {
     return _currentPhase == PHASE.DEPOSIT;
   }
 
   // Check if gifting is allowed
-  function giftingAllowed() public {
+  function giftingAllowed() public returns (bool) {
     return _currentPhase == PHASE.GIFT;
   }
 

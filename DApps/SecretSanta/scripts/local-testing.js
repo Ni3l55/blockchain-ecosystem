@@ -73,28 +73,59 @@ async function sendNFTtoSanta(user, nftContract, nftId) {
   console.log("Owner of NFT:", nftOwner)
 }
 
-// Let santa scramble the NFTs he received
-async function santaScramble() {
+// Transfer to the next phase in [DEPOSIT - GIFT - COOLDOWN]
+async function nextPhase() {
+  let txn = await SecretSantaContract.goNextPhase();
+  await txn.wait();
+  console.log("Going to the next phase");
 
+  // Confirm
+  let deps = await SecretSantaContract.depositsAllowed();
+  //console.log("Deposits allowed:", deps);
 }
 
-// Let santa send out NFTs to users
-async function santaSend() {
+// Let a user claim their gift
+async function claimGift(user) {
+  let txn = await SecretSantaContract.connect(user).claimGift();
+  await txn.wait();
+
+  // Confirm
+  let tkns = await NielsNFTContract.tokensOfOwner(user.address);
+
+  console.log("User claming NFTs:", user.address);
+  console.log("Received:", tkns);
 
 }
 
 async function main() {
   await initUsers();
 
+  // Deploy contracts
   await deployNielsNFT();
 
   await deploySecretSanta();
 
+  // Mint NFTs for some users
   await mintNielsNFTs(user1);
+  await mintNielsNFTs(user2);
+  await mintNielsNFTs(user3);
 
-  await approveNFTsendToSanta(user1, NielsNFTContract, 1)
+  // Approve & Send
+  await approveNFTsendToSanta(user1, NielsNFTContract, 0)
+  await approveNFTsendToSanta(user2, NielsNFTContract, 5)
+  await approveNFTsendToSanta(user3, NielsNFTContract, 10)
 
-  await sendNFTtoSanta(user1, NielsNFTContract, 1);
+  await sendNFTtoSanta(user1, NielsNFTContract, 0);
+  await sendNFTtoSanta(user2, NielsNFTContract, 5);
+  await sendNFTtoSanta(user3, NielsNFTContract, 10);
+
+  // Go to the next phase
+  await nextPhase();
+
+  // Claim gifts
+  await claimGift(user3);
+  await claimGift(user1);
+  await claimGift(user2);
 }
 
 main()
