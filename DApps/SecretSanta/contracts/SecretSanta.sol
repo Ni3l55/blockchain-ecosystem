@@ -64,7 +64,7 @@ contract SecretSanta is Ownable, ERC721Holder {
 
   // User picks a random gift from the deposits
   // Gifts are matched here so user pays gas fees instead of owner
-  // TODO: use true random off-chain source instead of index
+  // TODO: use true random off-chain source instead of pop()
   function claimGift() public {
     require(_currentPhase == PHASE.GIFT);
     require(_gifts[msg.sender].nftAddress == address(0x0));   // User did not take gift yet
@@ -87,11 +87,10 @@ contract SecretSanta is Ownable, ERC721Holder {
 
   // Transfer to the next phase of {DEPOSIT, GIFT, COOLDOWN}
   function goNextPhase() public onlyOwner {
-    // Shift to the next phase TODO reinitialize stuff probably
     if (_currentPhase == PHASE.DEPOSIT) {
       _currentPhase = PHASE.GIFT;
     } else if (_currentPhase == PHASE.GIFT) {
-      _currentPhase = PHASE.COOLDOWN;       // Wipe pool
+      _currentPhase = PHASE.COOLDOWN;       
     } else if (_currentPhase == PHASE.COOLDOWN) {
       _currentPhase = PHASE.DEPOSIT;
     }
