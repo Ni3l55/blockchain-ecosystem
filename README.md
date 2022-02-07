@@ -8,14 +8,23 @@ Overview of some different (public) blockchain technologies. Split up in:
 - Conceptual chains & nodes overview
 - Applications on the chain
 
-## NFTs
-Some sample NFTs created by me.
+## DApps
+Collection of decentralized apps.
 
-### NielsNFT
+#### SecretSanta
+Smart contract which allows users to send an NFT to santa, and then redistributes them among said users.
+This cycle can continue multiple times.
+
+Frontend yet to be built.
+
+## NFTs
+Some sample NFTs.
+
+#### NielsNFT
 ERC721Enumerable implementation called NielsNFT deployed on Avalanche C-Chain Testnet (FUJI).
 
 ## Coins
 Some sample coins.
 
-### NielsCoin
+#### NielsCoin
 ERC20 implementation called NielsCoin deployed on Avalanche C-Chain Testnet (FUJI).
