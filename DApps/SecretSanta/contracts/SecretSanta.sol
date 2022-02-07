@@ -90,7 +90,7 @@ contract SecretSanta is Ownable, ERC721Holder {
     if (_currentPhase == PHASE.DEPOSIT) {
       _currentPhase = PHASE.GIFT;
     } else if (_currentPhase == PHASE.GIFT) {
-      _currentPhase = PHASE.COOLDOWN;       
+      _currentPhase = PHASE.COOLDOWN;
     } else if (_currentPhase == PHASE.COOLDOWN) {
       _currentPhase = PHASE.DEPOSIT;
     }
