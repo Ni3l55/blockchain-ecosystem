@@ -126,6 +126,27 @@ async function main() {
   await claimGift(user1);
   await claimGift(user3);
   await claimGift(user2);
+
+  // Go to the next phase: COOLDOWN
+  await nextPhase();
+  // Go to the next phase: GIFT
+  await nextPhase();
+
+  // Approve & Send
+  await approveNFTsendToSanta(user1, NielsNFTContract, 1)
+  await approveNFTsendToSanta(user2, NielsNFTContract, 6)
+  await approveNFTsendToSanta(user3, NielsNFTContract, 11)
+
+  await sendNFTtoSanta(user1, NielsNFTContract, 1);
+  await sendNFTtoSanta(user2, NielsNFTContract, 6);
+  await sendNFTtoSanta(user3, NielsNFTContract, 11);
+
+  // Go to the next phase: Claim
+  await nextPhase();
+
+  await claimGift(user1);
+  await claimGift(user3);
+  await claimGift(user2);
 }
 
 main()

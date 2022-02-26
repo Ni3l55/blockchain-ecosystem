@@ -18,7 +18,6 @@ contract SecretSanta is Ownable, ERC721Holder {
   // NFT ownership can be transferred to this contract address
   // PHASE DEPOSIT:
   //    Users can deposit a single NFT by approving SecretSanta and calling deposit()
-  //    TODO: figure out howto: users can back out and reclaim their NFT Instance
   // PHASE GIFT:
   //    NFTs are put into a pool, and depositors can claim a new NFT
   //    If users forget to claim an NFT, they can claim another one next cycle
@@ -60,6 +59,9 @@ contract SecretSanta is Ownable, ERC721Holder {
     // Transfer NFT from sender to this contract
     // This contract should be approved by sender, otherwise will fail
     depositNFT.safeTransferFrom(msg.sender, address(this), _nftId);
+
+    // Wipe the user's previous gift, so he's eligible for a new one
+    _gifts[msg.sender].nftAddress = address(0x0);
   }
 
   // User picks a random gift from the deposits
