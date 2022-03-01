@@ -1,7 +1,10 @@
 import logo from ".././santa_icon.png";
 import useWeb3Modal from ".././hooks/useWeb3Modal";
 import React, { useEffect, useState } from "react";
-import { Button, Header, Image } from "./index";
+import { styled } from '@mui/material/styles';
+import Button from '@mui/material/Button';
+import Grid from '@mui/material/Grid';
+import Box from '@mui/material/Box';
 
 function WalletButton({ provider, loadWeb3Modal, logoutOfWeb3Modal }) {
   const [account, setAccount] = useState("");
@@ -37,7 +40,7 @@ function WalletButton({ provider, loadWeb3Modal, logoutOfWeb3Modal }) {
   }, [account, provider, setAccount, setRendered]);
 
   return (
-    <Button
+    <Button variant="contained"
       onClick={() => {
         if (!provider) {
           loadWeb3Modal();
@@ -55,18 +58,35 @@ function WalletButton({ provider, loadWeb3Modal, logoutOfWeb3Modal }) {
 function TopBar() {
   const [provider, loadWeb3Modal, logoutOfWeb3Modal] = useWeb3Modal();
 
+  const Item = styled(Box)(({ theme }) => ({
+  backgroundColor: theme.palette.secondary.main, // ff8080
+  ...theme.typography.body2,
+  padding: theme.spacing(1),
+  margin: 'auto',
+  textAlign: 'center',
+  color: theme.palette.text.primary,
+  }));
+
   return (
-    <div>
-      <Header>
-        <div className="title_logo">
-          <img src={logo} alt="santa" className="logo" />
-          <h1>
-            Secret Santa
-          </h1>
-        </div>
-        <WalletButton provider={provider} loadWeb3Modal={loadWeb3Modal} logoutOfWeb3Modal={logoutOfWeb3Modal} />
-      </Header>
-    </div>
+      <Grid container alignItems="center" spacing={0} bgcolor="#fafafa">
+        <Grid item xs={0} md={2}></Grid>
+        <Grid item xs={3} md={2}>
+          <Item>
+            <img src={logo} alt="santa" className="logo" />
+          </Item>
+        </Grid>
+        <Grid item xs={6} md={4}>
+          <Item>
+            <h1>Secret Santa</h1>
+          </Item>
+        </Grid>
+        <Grid item xs={3} md={2}>
+          <Item>
+            <WalletButton provider={provider} loadWeb3Modal={loadWeb3Modal} logoutOfWeb3Modal={logoutOfWeb3Modal} />
+          </Item>
+        </Grid>
+        <Grid item xs={0} md={2}></Grid>
+      </Grid>
   );
 }
 

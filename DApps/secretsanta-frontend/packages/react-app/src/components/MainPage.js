@@ -1,15 +1,17 @@
-import { Body, Button, Header, Image, Link } from "./index";
+import Box from '@mui/material/Box';
+import { styled } from '@mui/material/styles';
 
 function MainPage() {
+  const Background = styled(Box)(({ theme }) => ({
+  backgroundColor: theme.palette.secondary.main,
+  }));
+
   return (
-    <Body>
-
-      
-
-      <Link href="https://ethereum.org/developers/#getting-started" style={{ marginTop: "8px" }}>
+    <Background>
+      <a href="https://ethereum.org/developers/#getting-started" style={{ marginTop: "8px" }}>
         Learn Ethereum
-      </Link>
-    </Body>
+      </a>
+    </Background>
   )
 }
 

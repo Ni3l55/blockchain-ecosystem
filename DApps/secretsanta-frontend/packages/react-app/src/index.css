@@ -18,8 +18,6 @@ code {
   margin-right: 10px;
 }
 
-.title_logo {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
+.topBar {
+  background-color: #fffcff;
 }
